@@ -10,27 +10,28 @@ type Password struct {
 	strString      string
 	addNumbers     bool
 	maxString      int
+	maxSymbols     int
+	symbols        string
 }
 
 // generate Password
-func generatePassoword(maxLen int64, toggleNumber bool, strString string, maxstr int) Password {
-	var randomInt int // Declare randomInt at function scope
+func generatePassoword(maxLen int64, toggleNumber bool, strString string, maxstr int, maxsymbols int, symbol string) Password {
+	// Declare randomInt at function scope
 	// assign value
-	if !toggleNumber {
-		fmt.Println("Turn on the add number to add Number to the password")
-	} else {
-		randomInt = rand.Intn(int(maxLen))
-	}
-	maxStringValue := maxstr
-	tgNumber := toggleNumber
+
+	// call the Randomize Integer
+	randomInt := RandInteger(int(maxLen), toggleNumber)
+
+	// Call the RandString
 	randomeLetter := RandString(maxstr, strString)
 
+	// call the Randomize Symbols
+	randomSymbol := RandSymbols(maxsymbols, symbol)
 	// return value as the Password Struct
 	return Password{
 		randomeInteger: randomInt,
 		strString:      randomeLetter,
-		addNumbers:     tgNumber,
-		maxString:      maxStringValue,
+		symbols:        randomSymbol,
 	}
 }
 
@@ -43,6 +44,7 @@ func RandString(n int, lrBytes string) string {
 	return string(b)
 }
 
+// Randomize Number in password
 func RandInteger(maxInt int, toogle bool) int {
 	if toogle {
 		return rand.Intn(maxInt)
@@ -50,13 +52,30 @@ func RandInteger(maxInt int, toogle bool) int {
 	return 0 // Added return for false case
 }
 
+// Randomize Symbols
+func RandSymbols(n int, symbolBytes string) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = symbolBytes[rand.Intn(len(symbolBytes))]
+	}
+
+	return string(b)
+}
+
+// combine random and randomize
+func combineAndRandom(randomInt int, randomString string, randomChar string) string {
+	return "hello"
+}
+
 func main() {
 	var maxl int64 = 21
 	addNumbers := true
 	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	mxString := 10
+	maxSymbols := 20
+	symbols := "!@#$%^&*()"
 
-	password := generatePassoword(maxl, addNumbers, letterBytes, mxString)
+	password := generatePassoword(maxl, addNumbers, letterBytes, mxString, maxSymbols, symbols)
 
-	fmt.Println("password: ", password.randomeInteger, password.strString)
+	fmt.Println("password: ", password.randomeInteger, password.strString, password.symbols)
 }
