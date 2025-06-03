@@ -3,35 +3,40 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 )
 
 type Password struct {
-	randomeInteger int
-	strString      string
-	addNumbers     bool
-	maxString      int
-	maxSymbols     int
-	symbols        string
+	randomeInteger     int
+	strString          string
+	addNumbers         bool
+	maxString          int
+	maxSymbols         int
+	symbols            string
+	combineValueResult string
 }
 
 // generate Password
-func generatePassoword(maxLen int64, toggleNumber bool, strString string, maxstr int, maxsymbols int, symbol string) Password {
+func generatePassoword(maxLen int, toggleNumber bool, strString string, maxstr int, maxsymbols int, symbol string) Password {
 	// Declare randomInt at function scope
 	// assign value
 
 	// call the Randomize Integer
-	randomInt := RandInteger(int(maxLen), toggleNumber)
+	randomInt := RandInteger(maxLen, toggleNumber)
 
 	// Call the RandString
 	randomeLetter := RandString(maxstr, strString)
 
 	// call the Randomize Symbols
 	randomSymbol := RandSymbols(maxsymbols, symbol)
+
+	combineValue := combineAndRandom(randomInt, randomeLetter, randomSymbol)
 	// return value as the Password Struct
 	return Password{
-		randomeInteger: randomInt,
-		strString:      randomeLetter,
-		symbols:        randomSymbol,
+		randomeInteger:     randomInt,
+		strString:          randomeLetter,
+		symbols:            randomSymbol,
+		combineValueResult: combineValue,
 	}
 }
 
@@ -64,12 +69,21 @@ func RandSymbols(n int, symbolBytes string) string {
 
 // combine random and randomize
 func combineAndRandom(randomInt int, randomString string, randomChar string) string {
-	return "hello"
+	combined := strconv.Itoa(randomInt) + randomString + randomChar
+
+	charValue := make([]byte, len(combined))
+	for i := range len(combined) {
+		charValue[i] = combined[rand.Intn(len(combined))]
+	}
+
+	// fmt.Println(string(charValue), "Combined lenght:", len(combined), randomInt)
+
+	return string(charValue)
 }
 
 func main() {
-	var maxl int64 = 21
-	addNumbers := true
+	maxl := 64
+	addNumbers := false
 	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	mxString := 10
 	maxSymbols := 20
@@ -77,5 +91,5 @@ func main() {
 
 	password := generatePassoword(maxl, addNumbers, letterBytes, mxString, maxSymbols, symbols)
 
-	fmt.Println("password: ", password.randomeInteger, password.strString, password.symbols)
+	fmt.Println("password: ", password.combineValueResult)
 }
