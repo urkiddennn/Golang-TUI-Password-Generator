@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+
+	"github.com/pterm/pterm"
 )
 
 type Password struct {
@@ -82,14 +84,22 @@ func combineAndRandom(randomInt int, randomString string, randomChar string) str
 }
 
 func main() {
-	maxl := 64
+	maxl, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum")
+
+	maxNumber, err := strconv.Atoi(maxl)
+	if err != nil {
+		fmt.Println("Invalid Value, it should be a number")
+	}
+
+	fmt.Println()
+	pterm.Info.Printfln("You've enter: %s", maxl)
 	addNumbers := false
 	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	mxString := 10
 	maxSymbols := 20
 	symbols := "!@#$%^&*()"
 
-	password := generatePassoword(maxl, addNumbers, letterBytes, mxString, maxSymbols, symbols)
+	password := generatePassoword(maxNumber, addNumbers, letterBytes, mxString, maxSymbols, symbols)
 
 	fmt.Println("password: ", password.combineValueResult)
 }
