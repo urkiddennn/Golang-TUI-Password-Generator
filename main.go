@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/pterm/pterm"
+	"github.com/pterm/pterm/putils"
 )
 
 type Password struct {
@@ -84,6 +85,14 @@ func combineAndRandom(randomInt int, randomString string, randomChar string) str
 }
 
 func main() {
+	// tile bar
+	pterm.DefaultBigText.WithLetters(
+		putils.LettersFromStringWithStyle("Go", pterm.FgCyan.ToStyle()),
+		putils.LettersFromStringWithStyle("GENPASS", pterm.FgLightMagenta.ToStyle())).
+		Render()
+	// Go GENPASS details
+	pterm.DefaultBasicText.Println("Create Password" + pterm.LightYellow(" Fast") + " as " + pterm.Yellow(" Lightning"))
+
 	maxl, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum")
 
 	maxNumber, err := strconv.Atoi(maxl)
@@ -92,8 +101,8 @@ func main() {
 	}
 
 	fmt.Println()
-	pterm.Info.Printfln("You've enter: %s", maxl)
-	addNumbers := false
+	pterm.Info.Println("You've enter: ", maxNumber)
+	addNumbers := true
 	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	mxString := 10
 	maxSymbols := 20
