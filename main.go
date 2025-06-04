@@ -10,169 +10,144 @@ import (
 	"github.com/pterm/pterm/putils"
 )
 
+// Password represents the generated password and its components.
 type Password struct {
-	randomeInteger     int
-	strString          string
-	addNumbers         bool
-	maxString          int
-	maxSymbols         int
-	symbols            string
-	combineValueResult string
+	Value         string // The final combined and shuffled password
+	RandomInteger int    // The random number component
+	RandomString  string // The random string component
+	RandomSymbols string // The random symbols component
 }
 
-// generate Password
-func generatePassoword(maxLen int, toggleNumber bool, strString string, maxstr int, maxsymbols int, symbol string) Password {
-	// Declare randomInt at function scope
-	// assign value
+// PasswordGenerator holds parameters for password generation.
+type PasswordGenerator struct {
+	IncludeNumbers bool
+	MaxNumber      int
+	LetterCharset  string
+	MaxLetters     int
+	SymbolCharset  string
+	MaxSymbols     int
+}
 
-	// call the Randomize Integer
-	randomInt := RandInteger(maxLen, toggleNumber)
+// NewPasswordGenerator creates a new PasswordGenerator with default or provided values.
+func NewPasswordGenerator() *PasswordGenerator {
+	return &PasswordGenerator{
+		LetterCharset: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
+		SymbolCharset: "~!@#$%^&*()_+",
+	}
+}
 
-	// Call the RandString
-	randomeLetter := RandString(maxstr, strString)
+// GeneratePassword generates a password based on the generator's settings.
+func (pg *PasswordGenerator) GeneratePassword() Password {
+	var randomInt int
+	if pg.IncludeNumbers {
+		randomInt = rand.Intn(pg.MaxNumber + 1) // +1 to make MaxNumber inclusive
+	}
 
-	// call the Randomize Symbols
-	randomSymbol := RandSymbols(maxsymbols, symbol)
+	randomLetters := pg.RandString(pg.MaxLetters, pg.LetterCharset)
+	randomSymbols := pg.RandString(pg.MaxSymbols, pg.SymbolCharset) // Reusing RandString for symbols
 
-	combineValue := combineAndRandom(randomInt, randomeLetter, randomSymbol)
-	// return value as the Password Struct
+	combinedValue := pg.combineAndShuffle(randomInt, randomLetters, randomSymbols)
+
 	return Password{
-		randomeInteger:     randomInt,
-		strString:          randomeLetter,
-		symbols:            randomSymbol,
-		combineValueResult: combineValue,
+		Value:         combinedValue,
+		RandomInteger: randomInt,
+		RandomString:  randomLetters,
+		RandomSymbols: randomSymbols,
 	}
 }
 
-// Randomize String
-func RandString(n int, lrBytes string) string {
+// RandString generates a random string of length n from a given charset.
+func (pg *PasswordGenerator) RandString(n int, charset string) string {
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = lrBytes[rand.Intn(len(lrBytes))]
+		b[i] = charset[rand.Intn(len(charset))]
 	}
 	return string(b)
 }
 
-// Randomize Number in password
-func RandInteger(maxInt int, toogle bool) int {
-	if toogle {
-		return rand.Intn(maxInt)
+// combineAndShuffle combines the components and shuffles them.
+func (pg *PasswordGenerator) combineAndShuffle(randomInt int, randomString, randomChar string) string {
+	var combined string
+	if pg.IncludeNumbers {
+		combined += strconv.Itoa(randomInt)
 	}
-	return 0 // Added return for false case
+	combined += randomString
+	combined += randomChar
+
+	// Convert to a slice of runes to handle Unicode characters correctly (though not strictly needed for current charsets)
+	runes := []rune(combined)
+	rand.Shuffle(len(runes), func(i, j int) {
+		runes[i], runes[j] = runes[j], runes[i]
+	})
+
+	return string(runes)
 }
 
-// Randomize Symbols
-func RandSymbols(n int, symbolBytes string) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = symbolBytes[rand.Intn(len(symbolBytes))]
-	}
+// promptForNumbers prompts the user for number inclusion and max number.
+func promptForNumbers() (int, bool) {
+	pterm.DefaultBasicText.Println("Add Number to the " + pterm.LightMagenta("Password?"))
 
-	return string(b)
-}
+	options := []string{"yes", "no"}
+	selectedOption, _ := pterm.DefaultInteractiveSelect.WithOptions(options).Show()
 
-// combine random and randomize
-func combineAndRandom(randomInt int, randomString string, randomChar string) string {
-	combined := strconv.Itoa(randomInt) + randomString + randomChar
-
-	charValue := make([]byte, len(combined))
-	for i := range len(combined) {
-		charValue[i] = combined[rand.Intn(len(combined))]
-	}
-
-	// fmt.Println(string(charValue), "Combined lenght:", len(combined), randomInt)
-
-	return string(charValue)
-}
-
-// UI for the selection of the Numbers
-func numberSelect() (int, bool) {
-	var options []string
-
-	target := "yes"
-	var maxNumber int
-
-	pterm.DefaultBasicText.Println("Add Number to the" + pterm.LightMagenta(" Password?"))
-
-	options = append(options, fmt.Sprintf("yes"))
-	options = append(options, fmt.Sprintf("no"))
-
-	selectedOptions, _ := pterm.DefaultInteractiveSelect.WithOptions(options).Show()
-
-	if contains(target, selectedOptions) {
-		maxl, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum Number: ")
-
-		maxNumber = covertNumberToString(maxl)
+	if selectedOption == "yes" {
+		maxl, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum Number (e.g., 100 for numbers up to 99): ")
+		maxNumber, err := strconv.Atoi(maxl)
+		if err != nil {
+			pterm.Error.Println("Invalid value. Please enter a number. Defaulting to 0.")
+			return 0, false
+		}
+		pterm.Info.Println("You've entered: ", maxNumber)
+		return maxNumber, true
 	}
 	fmt.Println()
-	pterm.Info.Println("You've enter: ", maxNumber)
-
-	return maxNumber, contains(target, selectedOptions)
+	return 0, false
 }
 
-// CHeck if it contains a certain value
-func contains(target string, options string) bool {
-	return target == options
-}
-
-// return maxNumber functions
-func covertNumberToString(maxl string) int {
-	maxNumber, err := strconv.Atoi(maxl)
+// promptForLength prompts the user for the desired length of a component.
+func promptForLength(componentName string) int {
+	pterm.DefaultBasicText.Println(fmt.Sprintf("Enter the Number of %s you want to put in your ", componentName) + pterm.LightMagenta("Password?"))
+	input, _ := pterm.DefaultInteractiveTextInput.Show(fmt.Sprintf("Enter Maximum %s: ", componentName))
+	length, err := strconv.Atoi(input)
 	if err != nil {
-		fmt.Println("Invalid Value, it should be a number")
+		pterm.Error.Println("Invalid value. Please enter a number. Defaulting to 0.")
+		return 0
 	}
-
-	return maxNumber
-}
-
-func letterOptions() (string, int) {
-	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-	pterm.DefaultBasicText.Println("Enter the Number of Strings you want to put in your" + pterm.LightMagenta(" Password?"))
-
-	mString, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum String: ")
-	mxString := covertNumberToString(mString)
-	return letterBytes, mxString
-}
-
-func symbolOptions() (string, int) {
-	letterBytes := "~!@#$%%^&*()_+"
-
-	pterm.DefaultBasicText.Println("Enter the Number of symbols you want to put in your" + pterm.LightMagenta(" Password?"))
-
-	mString, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum Symbols: ")
-	mxString := covertNumberToString(mString)
-	return letterBytes, mxString
+	return length
 }
 
 func main() {
-	// tile bar
+	// Seed the random number generator
+	rand.Seed(time.Now().UnixNano())
+
+	// Title bar
 	pterm.DefaultBigText.WithLetters(
 		putils.LettersFromStringWithStyle("Go", pterm.FgCyan.ToStyle()),
 		putils.LettersFromStringWithStyle("GENPASS", pterm.FgLightMagenta.ToStyle())).
 		Render()
-	// Go GENPASS details
-	pterm.DefaultBasicText.Println("Create Password" + pterm.LightYellow(" Fast") + " as " + pterm.Yellow(" Lightning"))
+	pterm.DefaultBasicText.Println("Create Password" + pterm.LightYellow(" Fast") + " as " + pterm.Yellow("Lightning"))
 
-	// call the number UI
-	maxNumber, addNumbers := numberSelect()
+	pg := NewPasswordGenerator()
 
-	letterBytes, mxString := letterOptions()
-	symbols, maxSymbols := symbolOptions()
+	// Prompt for number options
+	pg.MaxNumber, pg.IncludeNumbers = promptForNumbers()
 
-	password := generatePassoword(maxNumber, addNumbers, letterBytes, mxString, maxSymbols, symbols)
+	// Prompt for letter options
+	pg.MaxLetters = promptForLength("Strings")
+
+	// Prompt for symbol options
+	pg.MaxSymbols = promptForLength("Symbols")
 
 	multi := pterm.DefaultMultiPrinter
 	pb1, _ := pterm.DefaultProgressbar.WithTotal(100).WithWriter(multi.NewWriter()).Start("Password Generating")
 
 	multi.Start()
-
 	for i := 1; i <= 100; i++ {
-		pb1.Increment() // Increment the first progress bar at each iteration
-
-		time.Sleep(time.Millisecond * 50) // Pause for 50 milliseconds at each iteration
+		pb1.Increment()
+		time.Sleep(time.Millisecond * 50)
 	}
 	multi.Stop()
 
-	fmt.Println("password: ", password.combineValueResult)
+	password := pg.GeneratePassword()
+	fmt.Println("Generated Password: ", password.Value)
 }
