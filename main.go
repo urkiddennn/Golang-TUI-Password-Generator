@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+	"time"
 
 	"github.com/pterm/pterm"
 	"github.com/pterm/pterm/putils"
@@ -99,9 +100,9 @@ func numberSelect() (int, bool) {
 	selectedOptions, _ := pterm.DefaultInteractiveSelect.WithOptions(options).Show()
 
 	if contains(target, selectedOptions) {
-		maxl, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum")
+		maxl, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum Number: ")
 
-		maxNumber = numberMax(maxl)
+		maxNumber = covertNumberToString(maxl)
 	}
 	fmt.Println()
 	pterm.Info.Println("You've enter: ", maxNumber)
@@ -115,13 +116,23 @@ func contains(target string, options string) bool {
 }
 
 // return maxNumber functions
-func numberMax(maxl string) int {
+func covertNumberToString(maxl string) int {
 	maxNumber, err := strconv.Atoi(maxl)
 	if err != nil {
 		fmt.Println("Invalid Value, it should be a number")
 	}
 
 	return maxNumber
+}
+
+func letterOptions() (string, int) {
+	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+	pterm.DefaultBasicText.Println("Enter the Number of Strings you want to put in your" + pterm.LightMagenta(" Password?"))
+
+	mString, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum String: ")
+	mxString := covertNumberToString(mString)
+	return letterBytes, mxString
 }
 
 func main() {
@@ -136,12 +147,23 @@ func main() {
 	// call the number UI
 	maxNumber, addNumbers := numberSelect()
 
-	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	mxString := 10
+	letterBytes, mxString := letterOptions()
 	maxSymbols := 20
 	symbols := "!@#$%^&*()"
 
 	password := generatePassoword(maxNumber, addNumbers, letterBytes, mxString, maxSymbols, symbols)
+
+	multi := pterm.DefaultMultiPrinter
+	pb1, _ := pterm.DefaultProgressbar.WithTotal(100).WithWriter(multi.NewWriter()).Start("Password Generating")
+
+	multi.Start()
+
+	for i := 1; i <= 100; i++ {
+		pb1.Increment() // Increment the first progress bar at each iteration
+
+		time.Sleep(time.Millisecond * 50) // Pause for 50 milliseconds at each iteration
+	}
+	multi.Stop()
 
 	fmt.Println("password: ", password.combineValueResult)
 }
