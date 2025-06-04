@@ -135,6 +135,16 @@ func letterOptions() (string, int) {
 	return letterBytes, mxString
 }
 
+func symbolOptions() (string, int) {
+	letterBytes := "~!@#$%%^&*()_+"
+
+	pterm.DefaultBasicText.Println("Enter the Number of symbols you want to put in your" + pterm.LightMagenta(" Password?"))
+
+	mString, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum Symbols: ")
+	mxString := covertNumberToString(mString)
+	return letterBytes, mxString
+}
+
 func main() {
 	// tile bar
 	pterm.DefaultBigText.WithLetters(
@@ -148,8 +158,7 @@ func main() {
 	maxNumber, addNumbers := numberSelect()
 
 	letterBytes, mxString := letterOptions()
-	maxSymbols := 20
-	symbols := "!@#$%^&*()"
+	symbols, maxSymbols := symbolOptions()
 
 	password := generatePassoword(maxNumber, addNumbers, letterBytes, mxString, maxSymbols, symbols)
 
