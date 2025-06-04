@@ -84,15 +84,8 @@ func combineAndRandom(randomInt int, randomString string, randomChar string) str
 	return string(charValue)
 }
 
-func main() {
-	// tile bar
-	pterm.DefaultBigText.WithLetters(
-		putils.LettersFromStringWithStyle("Go", pterm.FgCyan.ToStyle()),
-		putils.LettersFromStringWithStyle("GENPASS", pterm.FgLightMagenta.ToStyle())).
-		Render()
-	// Go GENPASS details
-	pterm.DefaultBasicText.Println("Create Password" + pterm.LightYellow(" Fast") + " as " + pterm.Yellow(" Lightning"))
-
+// UI for the selection of the Numbers
+func numberSelect() int {
 	maxl, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum")
 
 	maxNumber, err := strconv.Atoi(maxl)
@@ -102,6 +95,22 @@ func main() {
 
 	fmt.Println()
 	pterm.Info.Println("You've enter: ", maxNumber)
+
+	return maxNumber
+}
+
+func main() {
+	// tile bar
+	pterm.DefaultBigText.WithLetters(
+		putils.LettersFromStringWithStyle("Go", pterm.FgCyan.ToStyle()),
+		putils.LettersFromStringWithStyle("GENPASS", pterm.FgLightMagenta.ToStyle())).
+		Render()
+	// Go GENPASS details
+	pterm.DefaultBasicText.Println("Create Password" + pterm.LightYellow(" Fast") + " as " + pterm.Yellow(" Lightning"))
+
+	// call the number UI
+	maxNumber := numberSelect()
+
 	addNumbers := true
 	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	mxString := 10
