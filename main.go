@@ -85,16 +85,41 @@ func combineAndRandom(randomInt int, randomString string, randomChar string) str
 }
 
 // UI for the selection of the Numbers
-func numberSelect() int {
-	maxl, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum")
+func numberSelect() (int, bool) {
+	var options []string
 
+	target := "yes"
+	var maxNumber int
+
+	pterm.DefaultBasicText.Println("Add Number to the" + pterm.LightMagenta(" Password?"))
+
+	options = append(options, fmt.Sprintf("yes"))
+	options = append(options, fmt.Sprintf("no"))
+
+	selectedOptions, _ := pterm.DefaultInteractiveSelect.WithOptions(options).Show()
+
+	if contains(target, selectedOptions) {
+		maxl, _ := pterm.DefaultInteractiveTextInput.Show("Enter Maximum")
+
+		maxNumber = numberMax(maxl)
+	}
+	fmt.Println()
+	pterm.Info.Println("You've enter: ", maxNumber)
+
+	return maxNumber, contains(target, selectedOptions)
+}
+
+// CHeck if it contains a certain value
+func contains(target string, options string) bool {
+	return target == options
+}
+
+// return maxNumber functions
+func numberMax(maxl string) int {
 	maxNumber, err := strconv.Atoi(maxl)
 	if err != nil {
 		fmt.Println("Invalid Value, it should be a number")
 	}
-
-	fmt.Println()
-	pterm.Info.Println("You've enter: ", maxNumber)
 
 	return maxNumber
 }
@@ -109,9 +134,8 @@ func main() {
 	pterm.DefaultBasicText.Println("Create Password" + pterm.LightYellow(" Fast") + " as " + pterm.Yellow(" Lightning"))
 
 	// call the number UI
-	maxNumber := numberSelect()
+	maxNumber, addNumbers := numberSelect()
 
-	addNumbers := true
 	letterBytes := "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	mxString := 10
 	maxSymbols := 20
